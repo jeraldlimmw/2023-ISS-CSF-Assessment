@@ -25,5 +25,6 @@ export class OrdersComponent implements OnInit{
 
   delivered(orderId: string) {
     this.pSvc.delivered(orderId)
+    this.pSvc.getOrders(this.email)
   }
 }

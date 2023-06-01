@@ -12,17 +12,20 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class AppConfig {
 
-	@Value("${redis.host}")
-	private String redisHost;
+	@Value("${spring.data.redis.host}")
+    private String redisHost;
 
-	@Value("${redis.port}")
-	private Integer redisPort;
+    @Value("${spring.data.redis.port}")
+    private Integer redisPort;
+    
+    @Value("${spring.data.redis.user}")
+    private String redisUser;
 
-	@Value("${redis.database}")
-	private Integer redisDB;
-
-    @Value("${redis.password}")
+    @Value("${spring.data.redis.password}")
     private String redisPassword;
+
+	@Value("${spring.data.redis.database}")
+	private Integer redisDB;
 
 	// Warning: Do not modify the createTemplate() method; either its method signature 
 	// or its logic. Changing any of these will render any of your assessment task using
