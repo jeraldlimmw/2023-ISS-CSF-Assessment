@@ -1,0 +1,18 @@
+<h2>Orders for {{ email }}</h2>
+<div *ngFor="let o of orders$ | async">
+    <table>
+        <tr>
+            <td>Date: </td>
+            <td>{{ o.date }}</td>
+        </tr>
+        <tr>
+            <td>OrderId </td>
+            <td>{{ o.orderId }} &nbsp; <button type="button" (click)="delivered(o.orderId)">Delivered</button></td>
+        </tr>
+        <tr>
+            <td>{{ o.total }}</td>
+            <td></td>
+        </tr>
+    </table>
+    <button type="button" [routerLink]="['/']">Back to Ordering</button>
+</div>
