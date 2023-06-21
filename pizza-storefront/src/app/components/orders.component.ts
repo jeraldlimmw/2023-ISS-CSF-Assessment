@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PizzaService } from '../pizza.service';
 import { ApiGetResponse } from '../models';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-orders',
@@ -19,12 +19,14 @@ export class OrdersComponent implements OnInit{
 
   ngOnInit(): void {
     this.email = this.activatedRoute.snapshot.params['email']
-    
     this.orders$ = this.pSvc.getOrders(this.email)
   }
 
   delivered(orderId: string) {
-    this.pSvc.delivered(orderId)
-    this.pSvc.getOrders(this.email)
+    firstValueFrom(this.pSvc.delivered(orderId))
+      .then(result => {this.orders$ = this.pSvc.getOrders(this.email)})
+      .catch(err => {
+        alert(JSON.stringify(err))
+      })
   }
 }

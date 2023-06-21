@@ -27,12 +27,12 @@ public class OrderingService {
 	@Autowired
 	private PendingOrdersRepository pendingOrdersRepo;
 
-	private final String URL = "https://pizza-pricing-production.up.railway.app";
+	//private final String URL = "https://pizza-pricing-production.up.railway.app/order";
+	private final String URL = "https://fake-pizza-api-production.up.railway.app/order";
 
 	// TODO: Task 5
 	// WARNING: DO NOT CHANGE THE METHOD'S SIGNATURE
 	public PizzaOrder placeOrder(PizzaOrder order) throws OrderException {
-		System.out.println(">>> Service - Placing order");
 
 		RestTemplate template = new RestTemplate();
 
@@ -44,6 +44,7 @@ public class OrderingService {
 		map.add("thickCrust", order.getThickCrust().toString());
 		map.add("toppings", order.getToppings().toString());
 		map.add("comments", order.getComments());
+		System.out.println(">>>> Map for HttpEntity" + map);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -53,12 +54,14 @@ public class OrderingService {
 		ResponseEntity<String> payload = template.exchange(URL, HttpMethod.POST, entity, String.class);
 
 		String[] payloadArr = payload.getBody().split("[,]");
-		System.out.println(">>> Service Payload: " + payloadArr);
+		System.out.println(">>>> Payload from Pricing API: " + payloadArr.toString());
 		order.setOrderId(payloadArr[0]);
 		long epoch = Long.parseLong(payloadArr[1]);
-		order.setDate(new Date(epoch * 1000));
+		order.setDate(new Date(epoch));
 		order.setTotal(Float.parseFloat(payloadArr[2]));
 
+		ordersRepo.add(order);
+		pendingOrdersRepo.add(order);
 		return order;
 	}
 

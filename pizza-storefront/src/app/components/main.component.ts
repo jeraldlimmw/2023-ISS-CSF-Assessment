@@ -1,8 +1,9 @@
-import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Order } from '../models';
 import { PizzaService } from '../pizza.service';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 const SIZES: string[] = [
   "Personal - 6 inches",
@@ -70,14 +71,20 @@ export class MainComponent implements OnInit{
         this.order.toppings.push(PIZZA_TOPPINGS[i])
     }
     console.info(">>> order: ", this.order)
-    this.pSvc.order = this.order
-    this.pSvc.placeOrder()
-    this.router.navigate(['/', this.order.email])
+
+    firstValueFrom(this.pSvc.placeOrder(this.order))
+      .then(result => {
+          this.form.reset()
+          this.router.navigate(['/orders', result.email])
+      })
+      .catch(err => {
+          alert(JSON.stringify(err))
+      })
   }
 
   hasToppings(){
     for (let i = 0; i < PIZZA_TOPPINGS.length; i++) {
-      if (!this.form.get(`t${i}`)?.value)
+      if (!!this.form.get(`t${i}`)?.value)
         return true
     }
     return false

@@ -52,7 +52,7 @@ public class PizzaOrder {
 
 	@Override
 	public String toString() {
-		return "PizzaOrder{orderId=%s, date=%s, name=%s, email=%s, sauce=%s, size=%d, thickCurst=%b, toppings=%s, comments=%s, total=%f}"
+		return "PizzaOrder{orderId=%s, date=%s, name=%s, email=%s, sauce=%s, size=%d, thickCrust=%b, toppings=%s, comments=%s, total=%f}"
 				.formatted(orderId, date, name, email, sauce, size, thickCrust, toppings, comments, total);
 	}
 

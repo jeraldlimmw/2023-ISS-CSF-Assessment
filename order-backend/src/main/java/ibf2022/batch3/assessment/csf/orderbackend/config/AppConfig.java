@@ -12,19 +12,19 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class AppConfig {
 
-	@Value("${spring.data.redis.host}")
+	@Value("${redis.host}")
     private String redisHost;
 
-    @Value("${spring.data.redis.port}")
+    @Value("${redis.port}")
     private Integer redisPort;
     
-    @Value("${spring.data.redis.user}")
+    @Value("${redis.user}")
     private String redisUser;
 
-    @Value("${spring.data.redis.password}")
+    @Value("${redis.password}")
     private String redisPassword;
 
-	@Value("${spring.data.redis.database}")
+	@Value("${redis.database}")
 	private Integer redisDB;
 
 	// Warning: Do not modify the createTemplate() method; either its method signature 

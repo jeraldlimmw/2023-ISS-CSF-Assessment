@@ -12,9 +12,9 @@ export class PizzaService {
   // TODO: Task 3
   // You may add any parameters and return any type from placeOrder() method
   // Do not change the method name
-  placeOrder() {
-    console.info("service order: ", this.order)
-    return this.http.post<ApiPostResponse>('/api/order', this.order)
+  placeOrder(order: Order) {
+    // console.info("service order: ", this.order)
+    return this.http.post<ApiPostResponse>('/api/order', order)
   }
 
   // TODO: Task 5

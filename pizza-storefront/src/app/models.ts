@@ -25,8 +25,6 @@ export interface ApiPostResponse {
 
 export interface ApiGetResponse {
     orderId: string
-    date: number
-    name: string
-    email: string
-    total: number
+    date: string
+    total: string
 }

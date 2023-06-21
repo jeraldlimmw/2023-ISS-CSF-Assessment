@@ -28,13 +28,15 @@ public class PendingOrdersRepository {
 				.build();
 
 		redisTemplate.opsForValue().set(order.getOrderId(), o.toString());
+		System.out.println(">>>> Stored in Redis");
 	}
 
 	// TODO: Task 7
 	// WARNING: Do not change the method's signature.
 	public boolean delete(String orderId) {
 		redisTemplate.opsForValue().getAndDelete(orderId);
-		
-		return !redisTemplate.hasKey(orderId);
+		boolean deleted = !redisTemplate.hasKey(orderId);
+		System.out.println(">>>> Deleted from Redis: " + deleted);
+		return deleted;
 	}
 }

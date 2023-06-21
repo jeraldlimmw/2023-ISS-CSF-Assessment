@@ -6,11 +6,12 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,13 +25,13 @@ import ibf2022.batch3.assessment.csf.orderbackend.services.OrderException;
 import ibf2022.batch3.assessment.csf.orderbackend.services.OrderingService;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
 @Controller
 @RequestMapping(path="/api")
-// @CrossOrigin(origins="*")
 public class OrderController {
 
 	@Autowired
@@ -40,13 +41,13 @@ public class OrderController {
 	@PostMapping(path="/order")
 	@ResponseBody
 	public ResponseEntity<String> postOrder(@RequestBody String order) throws IOException {
-		System.out.println(order);
 		PizzaOrder po = this.createOrder(order);
-		System.out.println(">>> Controller po:" + po);
+		System.out.println(">>> Incoming PizzaOrder:" + po);
 		
 		PizzaOrder updatedPo;
 		try {
 			updatedPo = orderSvc.placeOrder(po);
+			System.out.println(updatedPo);
 		} catch (OrderException e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -67,26 +68,30 @@ public class OrderController {
 	@GetMapping(path="/orders/{email}")
 	@ResponseBody
 	public ResponseEntity<String> getOrdersByEmail (@PathVariable String email) {
+		System.out.println(">>> Get orders for email: " + email);
 		List<PizzaOrder> pList = orderSvc.getPendingOrdersByEmail(email);
-		List<String> response = new LinkedList<>();
+		JsonArrayBuilder ab = Json.createArrayBuilder();
 
 		for (PizzaOrder p : pList) {
-			String o = Json.createObjectBuilder()
+			DateTimeFormatter fmt = DateTimeFormat.forPattern("MMMM d, yyyy");
+			JsonObject o = Json.createObjectBuilder()
 				.add("orderId", p.getOrderId())
-				.add("date", p.getDate().toInstant().toEpochMilli())
-				.add("total", p.getTotal())
-				.build().toString();
-			response.add(o);
+				.add("date", fmt.print(p.getDate().toInstant().toEpochMilli()))
+				.add("total", String.format("%.02f", p.getTotal()))
+				.build();
+			ab.add(o);
 		}	
 		
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(response.toArray().toString());
+				.body(ab.build().toString());
 	}
 
 	// TODO: Task 7 - DELETE /api/order/<orderId>
-	@DeleteMapping(path="/orders/{orderId}")
+	@DeleteMapping(path="/order/{orderId}")
 	@ResponseBody
 	public ResponseEntity<String> deleteOrderById (@PathVariable String orderId){
+		System.out.println(">>> Delete orderId: " + orderId);
+		
 		boolean result = orderSvc.markOrderDelivered(orderId);
 
 		if(!result) {

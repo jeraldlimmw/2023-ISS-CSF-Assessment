@@ -6,7 +6,13 @@ import java.util.List;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -63,24 +69,52 @@ public class OrdersRepository {
 	/*
 	db.orders.find({
 		delivered: {$exists: false},
-		email: <email>
+		email: "jerald.mw.lim@gmail.com"
 	}).sort({date: -1})
+	*/
+	/*
+	db.orders.aggregate([
+		{$match:
+			{
+				delivered: {$exists: false},
+				email: "jerald.mw.lim@gmail.com"
+			}
+		},
+		{$project:
+			{_id:1, total:1, date:1}
+		},
+		{$sort:
+			{date: -1}
+		}	
+	])
 	*/
 	public List<PizzaOrder> getPendingOrdersByEmail(String email) {
 		List<PizzaOrder> pizzas = new LinkedList<>();
 		
-		Query query = new Query();
-		query.addCriteria(Criteria.where("delivered").exists(false)
-				.and("email").is(email))
-				.with(Sort.by(Sort.Direction.DESC, "date"));
+		// Query query = new Query();
+		// query.addCriteria(Criteria.where("delivered").exists(false)
+		// 		.and("email").is(email))
+		// 		.with(Sort.by(Sort.Direction.DESC, "date"));
 				
-		List<Document> docs = mongoTemplate.find(query, Document.class, "orders");
+		// List<Document> docs = mongoTemplate.find(query, Document.class, "orders");
+
+		MatchOperation mOp = Aggregation.match(
+				Criteria.where("delivered").exists(false)
+				.and("email").is(email));
+		ProjectionOperation pOp = Aggregation.project("_id", "total", "date");
+		SortOperation sOp = Aggregation.sort(Sort.by(Direction.DESC, "date"));
+
+		Aggregation pipeline = Aggregation.newAggregation(mOp, pOp, sOp);
+		AggregationResults<Document> docs = mongoTemplate.aggregate(
+				pipeline, "orders", Document.class); 
 		
 		for (Document d : docs) {
 			PizzaOrder p = new PizzaOrder();
 			p.setOrderId(d.getString("_id"));
-			p.setTotal(Float.parseFloat(d.getString("total")));
+			p.setTotal(d.getDouble("total").floatValue());
 			p.setDate(d.getDate("date"));
+			pizzas.add(p);
+			System.out.println(">>>> Pizza " + p + "added to list");
 		}
 		return pizzas;
 	}
@@ -91,18 +125,19 @@ public class OrdersRepository {
 	//   Native MongoDB query here for markOrderDelivered()
 	/*
 	db.orders.updateOne(
-		{_id : <orderId>},
-		{$set: delivered: "true"}
+		{_id : "6a9cc744"},
+		{$set: {delivered: "true"}}
 	)
 	*/
 	public boolean markOrderDelivered(String orderId) {
 		Query query = new Query();
-		query.addCriteria(Criteria.where("_id").is("orderId"));
+		query.addCriteria(Criteria.where("_id").is(orderId));
 
 		Update updateOps = new Update().set("delivered", "true");
-		UpdateResult result = mongoTemplate.upsert(query, updateOps, Document.class, "orders");
+		UpdateResult result = mongoTemplate.updateFirst(query, updateOps, Document.class, "orders");
 
-		return  result.getModifiedCount() > 0;
+		System.out.println(">>>> Updated " + result.getMatchedCount() + " result in Mongo");
+		return result.getModifiedCount() > 0;
 	}
 
 

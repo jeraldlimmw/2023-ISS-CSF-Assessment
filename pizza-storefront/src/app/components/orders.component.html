@@ -10,9 +10,11 @@
             <td>{{ o.orderId }} &nbsp; <button type="button" (click)="delivered(o.orderId)">Delivered</button></td>
         </tr>
         <tr>
-            <td>{{ o.total }}</td>
+            <td>${{ o.total }}</td>
             <td></td>
         </tr>
     </table>
+</div>
+<div>
     <button type="button" [routerLink]="['/']">Back to Ordering</button>
 </div>
